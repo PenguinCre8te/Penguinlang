@@ -117,16 +117,18 @@ void tokenize(const char* input) {
         switch (ch) {
             case '+': case '-': case '*': case '/':
                 add_token(TOKEN_OPERATOR, (char[]){ch, '\0'}, 0, ch, line, column);
+                i++; column++;
                 break;
             case '=':
                 add_token(TOKEN_ASSIGN, "=", 0, '=', line, column);
+                i++; column++;
                 break;
-            case '(': add_token(TOKEN_PAREN_OPEN, "(", 0, 0, line, column); break;
-            case ')': add_token(TOKEN_PAREN_CLOSE, ")", 0, 0, line, column); break;
-            case '{': add_token(TOKEN_BRACE_OPEN, "{", 0, 0, line, column); break;
-            case '}': add_token(TOKEN_BRACE_CLOSE, "}", 0, 0, line, column); break;
-            case ';': add_token(TOKEN_SEMICOLON, ";", 0, 0, line, column); break;
-            case ',': add_token(TOKEN_COMMA, ",", 0, 0, line, column); break;
+            case '(': add_token(TOKEN_PAREN_OPEN, "(", 0, 0, line, column); i++; column++; break;
+            case ')': add_token(TOKEN_PAREN_CLOSE, ")", 0, 0, line, column); i++; column++; break;
+            case '{': add_token(TOKEN_BRACE_OPEN, "{", 0, 0, line, column); i++; column++; break;
+            case '}': add_token(TOKEN_BRACE_CLOSE, "}", 0, 0, line, column); i++; column++; break;
+            case ';': add_token(TOKEN_SEMICOLON, ";", 0, 0, line, column); i++; column++; break;
+            case ',': add_token(TOKEN_COMMA, ",", 0, 0, line, column); i++; column++; break;
             case '!':
                 printf("TOKENIZER: Unexpected character '!' at line %d, column %d\n", line, column);
                 exit(1);
@@ -139,8 +141,7 @@ void tokenize(const char* input) {
 
                 while (input[i] != '\0' && input[i] != quote) {
                     if (input[i] == '\\') {
-                        i++;
-                        column++;
+                        i++; column++;
                         switch (input[i]) {
                             case 'n': str[j++] = '\n'; break;
                             case 't': str[j++] = '\t'; break;
@@ -152,8 +153,7 @@ void tokenize(const char* input) {
                     } else {
                         str[j++] = input[i];
                     }
-                    i++;
-                    column++;
+                    i++; column++;
                 }
 
                 if (input[i] != quote) {
@@ -161,17 +161,15 @@ void tokenize(const char* input) {
                     exit(1);
                 }
 
+                i++; column++;  // Skip closing quote
                 str[j] = '\0';
                 add_token(TOKEN_STRING, str, 0, 0, line, start_col);
-                // Do NOT increment i/column again here — let the main loop handle it
+                break;  // ✅ This break is essential
             }
             default:
                 printf("TOKENIZER: Unknown character '%c' at line %d, column %d\n", ch, line, column);
                 exit(1);
         }
-
-        i++;
-        column++;
     }
 
     add_token(TOKEN_EOF, "", 0, 0, line, column);
