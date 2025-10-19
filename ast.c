@@ -371,6 +371,20 @@ ASTNode* parse_return() {
     return node;
 }
 
+ASTNode* parse_var_declaration() {
+    // consume 'var'
+    advance();
+    Token name = expect(TOKEN_IDENTIFIER);
+    expect(TOKEN_ASSIGN);
+    ASTNode* value = parse_expression();
+    expect(TOKEN_SEMICOLON);
+
+    ASTNode* node = malloc(sizeof(ASTNode));
+    node->type = AST_ASSIGNMENT; // store as regular assignment
+    strcpy(node->assignment.name, name.lexeme);
+    node->assignment.value = value;
+    return node;
+}
 
 extern int token_count;
 int main() {
@@ -411,17 +425,3 @@ int main() {
     return 0;
 }
 
-ASTNode* parse_var_declaration() {
-    // consume 'var'
-    advance();
-    Token name = expect(TOKEN_IDENTIFIER);
-    expect(TOKEN_ASSIGN);
-    ASTNode* value = parse_expression();
-    expect(TOKEN_SEMICOLON);
-
-    ASTNode* node = malloc(sizeof(ASTNode));
-    node->type = AST_ASSIGNMENT; // store as regular assignment
-    strcpy(node->assignment.name, name.lexeme);
-    node->assignment.value = value;
-    return node;
-}
