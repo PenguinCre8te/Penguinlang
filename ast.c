@@ -422,6 +422,8 @@ int main() {
     int ir_index = 0;
     emit_node(program, ir_buffer, &ir_index);
     print_asm(ir_buffer, ir_index);
+    run_vm(ir_buffer, ir_index);
+
     return 0;
 }
 

@@ -155,5 +155,5 @@ typedef struct {
 
 void emit_node(ASTNode* node, Instruction* code, int* ip);
 void print_asm(Instruction* program, int count);
-
+void run_vm(Instruction* code, int count);
 #define MAX_IR 1024
