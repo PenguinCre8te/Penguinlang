@@ -14,6 +14,7 @@ typedef enum {
     TOKEN_BRACE_OPEN, //type 6
     TOKEN_BRACE_CLOSE, //type 7
     TOKEN_SEMICOLON, //type 8
+    TOKEN_KEYWORD_VAR, //type 9, 'var' keyword for declarations
     TOKEN_KEYWORD_IF, //type 9
     TOKEN_KEYWORD_ELSE, //type 10
     TOKEN_KEYWORD_WHILE, //type 11
@@ -99,3 +100,60 @@ typedef struct ASTNode {
 } ASTNode;
 
 extern Token tokens[];
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_VARS 256
+#define MAX_FUNCS 64
+
+typedef struct {
+    char name[32];
+    int value;
+} Variable;
+
+typedef struct {
+    char name[32];
+    struct ASTNode* body;
+    char** params;
+    int param_count;
+} Function;
+
+typedef enum {
+    OP_LOAD_CONST,     // Load constant into register or stack
+    OP_LOAD_VAR,       // Load variable value
+    OP_STORE_VAR,      // Store value into variable
+    OP_ADD,            // Add top two values
+    OP_SUB,            // Subtract
+    OP_MUL,            // Multiply
+    OP_DIV,            // Divide
+    OP_JMP,            // Unconditional jump
+    OP_JMP_IF_FALSE,   // Jump if top of stack is false
+    OP_LABEL,          // Label marker
+    OP_CALL,           // Call function
+    OP_RET,            // Return from function
+    OP_POP,            // Pop top of stack
+    OP_PUSH,           // Push value onto stack
+    OP_EQ,             // Equal comparison
+    OP_NEQ,            // Not equal
+    OP_GT,             // Greater than
+    OP_LT,             // Less than
+    OP_GTE,            // Greater or equal
+    OP_LTE,            // Less or equal
+    OP_PRINT,          // Debug print
+} Opcode;
+
+typedef struct {
+    Opcode opcode;
+    union {
+        int int_value;
+        char str_value[32];
+    };
+    char operand_type; // 'i' for int, 's' for string, 'v' for variable
+} Instruction;
+
+void emit_node(ASTNode* node, Instruction* code, int* ip);
+void print_asm(Instruction* program, int count);
+
+#define MAX_IR 1024

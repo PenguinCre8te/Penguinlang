@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "token.h"
+#include "definitions.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -35,6 +35,7 @@ ASTNode* parse_assignment(void);
 ASTNode* parse_function_def(void);
 ASTNode* parse_if(void);
 ASTNode* parse_while(void);
+ASTNode* parse_var_declaration(void);
 
 char* tokentypes[] = {
     "TOKEN_NUMBER", //type 0
@@ -46,6 +47,7 @@ char* tokentypes[] = {
     "TOKEN_BRACE_OPEN", //type 6
     "TOKEN_BRACE_CLOSE", //type 7
     "TOKEN_SEMICOLON", //type 8
+    "TOKEN_KEYWORD_VAR", //type 9, 'var' keyword
     "TOKEN_KEYWORD_IF", //type 9
     "TOKEN_KEYWORD_ELSE", //type 10
     "TOKEN_KEYWORD_WHILE", //type 11
@@ -240,6 +242,8 @@ ASTNode* parse_statement() {
         return parse_if();
     } else if (peek().type == TOKEN_KEYWORD_WHILE) {
         return parse_while();
+    } else if (peek().type == TOKEN_KEYWORD_VAR) {
+        return parse_var_declaration();
     } else if (peek().type == TOKEN_KEYWORD_RETURN) {
         return parse_return();  // ✅ NEW: handles return statements
     } else if (peek().type == TOKEN_IDENTIFIER && tokens[current + 1].type == TOKEN_ASSIGN) {
@@ -366,10 +370,26 @@ ASTNode* parse_return() {
 
     return node;
 }
+
+
 extern int token_count;
 int main() {
+    /*
     const char* code =
-        "print(\"penguin\");";
+        "while (true){print(\"penguin\");}";
+    */
+
+        const char* code =
+    "var count = 5;\n"
+    "while (count > 0) {\n"
+    "  if (count == 3) {\n"
+    "    print(\"Halfway there!\");\n"
+    "  } else {\n"
+    "    print(count);\n"
+    "  }\n"
+    "  count = count - 1;\n"
+    "}\n"
+    "print(\"Done!\");\n";
 
     tokenize(code);  // from tokenizer.c
     printf("\n=== TOKENS ===\n");
@@ -382,5 +402,26 @@ int main() {
     printf("\n=== AST ===\n");
     print_ast(program, 0);
 
+    printf("\n=== ASM ===\n");
+    // Emit and print
+    Instruction ir_buffer[MAX_IR];
+    int ir_index = 0;
+    emit_node(program, ir_buffer, &ir_index);
+    print_asm(ir_buffer, ir_index);
     return 0;
+}
+
+ASTNode* parse_var_declaration() {
+    // consume 'var'
+    advance();
+    Token name = expect(TOKEN_IDENTIFIER);
+    expect(TOKEN_ASSIGN);
+    ASTNode* value = parse_expression();
+    expect(TOKEN_SEMICOLON);
+
+    ASTNode* node = malloc(sizeof(ASTNode));
+    node->type = AST_ASSIGNMENT; // store as regular assignment
+    strcpy(node->assignment.name, name.lexeme);
+    node->assignment.value = value;
+    return node;
 }

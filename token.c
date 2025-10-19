@@ -1,4 +1,4 @@
-#include "token.h"
+#include "definitions.h"
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -21,6 +21,7 @@ void add_token(TokenType type, const char* lexeme, int value, char op, int line,
 }
 
 int is_keyword(const char* word) {
+    if (strcmp(word, "var") == 0) return TOKEN_KEYWORD_VAR; // ✅ handle var keyword
     if (strcmp(word, "if") == 0) return TOKEN_KEYWORD_IF;
     if (strcmp(word, "else") == 0) return TOKEN_KEYWORD_ELSE;
     if (strcmp(word, "while") == 0) return TOKEN_KEYWORD_WHILE;
@@ -109,6 +110,20 @@ void tokenize(const char* input) {
             add_token(TOKEN_NEQ, "!=", 0, 0, line, column);
             i += 2;
             column += 2;
+            continue;
+        }
+
+        // Single-character comparison operators
+        if (input[i] == '>') {
+            add_token(TOKEN_GT, ">", 0, 0, line, column);
+            i++;
+            column++;
+            continue;
+        }
+        if (input[i] == '<') {
+            add_token(TOKEN_LT, "<", 0, 0, line, column);
+            i++;
+            column++;
             continue;
         }
 
